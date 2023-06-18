@@ -30,4 +30,24 @@ public interface StatRepository extends JpaRepository<Hit, Integer> {
                     "GROUP BY a.name, h.uri " +
                     "ORDER BY COUNT(DISTINCT(h.ip)) DESC ")
     List<ViewStats> getStatsUnique(LocalDateTime start, LocalDateTime end, List<String> uris, int urisLen);
+
+    @Query(
+            value = "SELECT new ru.practicum.ewmstats.model.ViewStats(a.name, h.uri, COUNT(h.ip)) " +
+                    "FROM Hit h " +
+                    "JOIN h.app a " +
+                    "WHERE h.timestamp >= ?1 " +
+                    "  AND h.timestamp <= ?2 " +
+                    "GROUP BY a.name, h.uri " +
+                    "ORDER BY COUNT(h.ip) DESC ")
+    List<ViewStats> getStatsNotUnique(LocalDateTime start, LocalDateTime end);
+
+    @Query(
+            value = "SELECT new ru.practicum.ewmstats.model.ViewStats(a.name, h.uri, COUNT(DISTINCT(h.ip))) " +
+                    "FROM Hit h " +
+                    "JOIN h.app a " +
+                    "WHERE h.timestamp >= ?1 " +
+                    "  AND h.timestamp <= ?2 " +
+                    "GROUP BY a.name, h.uri " +
+                    "ORDER BY COUNT(DISTINCT(h.ip)) DESC ")
+    List<ViewStats> getStatsUnique(LocalDateTime start, LocalDateTime end);
 }

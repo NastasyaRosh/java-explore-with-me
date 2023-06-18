@@ -26,9 +26,20 @@ public class StatServiceImpl implements StatService {
 
     @Override
     public List<ViewStats> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
+        List<ViewStats> stats = null;
         if (unique) {
-            return statRep.getStatsUnique(start, end, uris, uris.size());
+            if (uris == null || uris.isEmpty()) {
+                stats = statRep.getStatsUnique(start, end);
+            } else {
+                stats = statRep.getStatsUnique(start, end, uris, uris.size());
+            }
+        } else {
+            if (uris == null || uris.isEmpty()) {
+                stats = statRep.getStatsNotUnique(start, end);
+            } else {
+                stats = statRep.getStatsNotUnique(start, end, uris, uris.size());
+            }
         }
-        return statRep.getStatsNotUnique(start, end, uris, uris.size());
+        return stats;
     }
 }
