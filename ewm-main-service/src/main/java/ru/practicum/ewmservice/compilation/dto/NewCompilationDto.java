@@ -3,7 +3,6 @@ package ru.practicum.ewmservice.compilation.dto;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Objects;
 import java.util.Set;
@@ -15,10 +14,9 @@ import java.util.Set;
 @Builder
 public class NewCompilationDto {
     private Set<Long> events;
-    @NotNull
-    private Boolean pinned;
+    private Boolean pinned = false;
     @NotBlank
-    @Size(max = 128)
+    @Size(max = 50)
     private String title;
 
     @Override

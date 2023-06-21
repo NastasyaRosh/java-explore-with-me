@@ -14,7 +14,7 @@ import java.util.Set;
 public class UpdateCompilationRequest {
     private Set<Long> events;
     private Boolean pinned;
-    @Size(max = 128)
+    @Size(max = 50)
     private String title;
 
     @Override

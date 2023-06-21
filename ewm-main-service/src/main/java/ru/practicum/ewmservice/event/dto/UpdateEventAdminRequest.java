@@ -16,11 +16,11 @@ import java.util.Objects;
 @NoArgsConstructor
 @Builder
 public class UpdateEventAdminRequest {
-    @Size(max = 255)
+    @Size(min = 3, max = 120)
     private String title;
-    @Size(max = 2000)
+    @Size(min = 20, max = 2000)
     private String annotation;
-    @Size(max = 7000)
+    @Size(min = 20, max = 7000)
     private String description;
     private LocationDto location;
     private Long category;

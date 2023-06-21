@@ -61,6 +61,6 @@ public class EventController {
     ) {
         log.info("GET: Get event by id = {}", eventId);
         statService.sendHit(request);
-        return EventMapper.mapToFullDto(eventService.findById(eventId));
+        return EventMapper.mapToFullDto(eventService.findByIdPublished(eventId));
     }
 }

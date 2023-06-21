@@ -13,7 +13,7 @@ import java.util.Objects;
 @Builder
 public class NewCategoryDto {
     @NotBlank
-    @Size(max = 64)
+    @Size(max = 50)
     private String name;
 
     @Override

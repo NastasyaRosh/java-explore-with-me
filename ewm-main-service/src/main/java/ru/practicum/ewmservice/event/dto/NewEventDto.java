@@ -19,13 +19,13 @@ import java.util.Objects;
 @Builder
 public class NewEventDto {
     @NotBlank
-    @Size(max = 255)
+    @Size(min = 3, max = 120)
     private String title;
     @NotBlank
-    @Size(max = 2000)
+    @Size(min = 20, max = 2000)
     private String annotation;
     @NotBlank
-    @Size(max = 7000)
+    @Size(min = 20, max = 7000)
     private String description;
     @NotNull
     private Long category;
@@ -38,7 +38,7 @@ public class NewEventDto {
     private boolean paid;
     @PositiveOrZero
     private int participantLimit;
-    private boolean requestModeration;
+    private boolean requestModeration = true;
 
 
     @Override

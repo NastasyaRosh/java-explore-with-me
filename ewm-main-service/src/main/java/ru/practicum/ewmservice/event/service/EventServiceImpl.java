@@ -11,6 +11,7 @@ import ru.practicum.ewmservice.event.property.EventSort;
 import ru.practicum.ewmservice.event.property.EventState;
 import ru.practicum.ewmservice.event.repository.EventRepository;
 import ru.practicum.ewmservice.event.stat.EventStatService;
+import ru.practicum.ewmservice.exception.NotAvailableException;
 import ru.practicum.ewmservice.exception.NotFoundException;
 import ru.practicum.ewmservice.exception.OperationAccessException;
 import ru.practicum.ewmservice.location.repository.LocationRepository;
@@ -45,6 +46,17 @@ public class EventServiceImpl implements EventService {
         Event event = eventRep.findById(id).orElseThrow(
                 () -> new NotFoundException(Event.class.getSimpleName(), id)
         );
+        return setTransientFields(event);
+    }
+
+    @Override
+    public Event findByIdPublished(Long id) {
+        Event event = eventRep.findById(id).orElseThrow(
+                () -> new NotFoundException(Event.class.getSimpleName(), id)
+        );
+        if (!event.getState().equals(EventState.PUBLISHED)) {
+            throw new NotFoundException(Event.class.getSimpleName(), id);
+        }
         return setTransientFields(event);
     }
 
@@ -165,7 +177,7 @@ public class EventServiceImpl implements EventService {
 
     private void validateEvent(Event event, Long userId) {
         if (event.getEventDate() != null && event.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new OperationAccessException("The start date of the event cannot be earlier than 2 hours later");
+            throw new NotAvailableException("The start date of the event cannot be earlier than 2 hours later");
         }
         if (userId != null && event.getInitiator() != null && !userId.equals(event.getInitiator().getId())) {
             throw new OperationAccessException("Only the owner can update the event");

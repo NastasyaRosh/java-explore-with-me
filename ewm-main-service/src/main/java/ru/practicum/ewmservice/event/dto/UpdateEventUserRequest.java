@@ -16,11 +16,11 @@ import java.util.Objects;
 @NoArgsConstructor
 @Builder
 public class UpdateEventUserRequest {
-    @Size(max = 2000)
+    @Size(min = 20, max = 2000)
     private String annotation;
     @PositiveOrZero
     private Long category;
-    @Size(max = 7000)
+    @Size(min = 20, max = 7000)
     private String description;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate;
@@ -30,7 +30,7 @@ public class UpdateEventUserRequest {
     private Integer participantLimit;
     private Boolean requestModeration;
     private StateAction stateAction;
-    @Size(max = 255)
+    @Size(min = 3, max = 120)
     private String title;
 
     @Override
