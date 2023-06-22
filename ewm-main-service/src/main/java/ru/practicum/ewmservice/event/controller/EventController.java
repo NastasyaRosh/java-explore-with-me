@@ -11,6 +11,7 @@ import ru.practicum.ewmservice.event.mapper.EventMapper;
 import ru.practicum.ewmservice.event.property.EventSort;
 import ru.practicum.ewmservice.event.service.EventService;
 import ru.practicum.ewmservice.event.stat.EventStatService;
+import ru.practicum.ewmservice.exception.IllegalPageArgumentException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;
@@ -45,6 +46,9 @@ public class EventController {
         log.info("GET: Get events by params");
         if (rangeStart == null) {
             rangeStart = LocalDateTime.now();
+        }
+        if ((rangeEnd != null) && (rangeEnd.isBefore(rangeStart))) {
+            throw new IllegalPageArgumentException("Start is before end.", "Date");
         }
         statService.sendHit(request);
         return EventMapper.mapToShortDto(eventService.findByParams(

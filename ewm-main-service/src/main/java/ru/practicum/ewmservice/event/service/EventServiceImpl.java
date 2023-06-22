@@ -21,7 +21,6 @@ import ru.practicum.ewmservice.request.repository.RequestRepository;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
@@ -61,9 +60,10 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Set<Event> findById(Set<Long> ids) {
+    public Set<Event> findByIdIn(Set<Long> ids) {
         List<Event> events = eventRep.findByIdIn(ids);
-        return new HashSet<>(setTransientFields(events));
+        Set<Event> outSet = new HashSet<>(events);
+        return outSet;
     }
 
     @Override
@@ -77,7 +77,7 @@ public class EventServiceImpl implements EventService {
                 users, text, categories, paid, rangeStart, rangeEnd, onlyAvailable, isPublic
         );
 
-        return setTransientFields(eventRep.findAll(specification)).stream()
+        return eventRep.findAll(specification).stream()
                 .sorted(getComparator(eventSort))
                 .skip(from)
                 .limit(size)
@@ -105,7 +105,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<Event> findEventsByUserId(Long userId, Long from, Integer size) {
         List<Event> events = eventRep.findByInitiatorId(userId, getIdSortedPageable(from, size)).getContent();
-        return setTransientFields(events);
+        return events;
     }
 
     @Override
@@ -145,33 +145,12 @@ public class EventServiceImpl implements EventService {
         return eventRep.save(oldEvent);
     }
 
-    private List<Event> setTransientFields(List<Event> events) {
-        List<Long> ids = events.stream().map(Event::getId).collect(toList());
-
-        Map<Long, Integer> confirmedRequests = requestRep
-                .findCountRequestsByEventIdsAndStatus(ids, RequestStatus.CONFIRMED);
-        if (confirmedRequests != null && !confirmedRequests.isEmpty()) {
-            for (Event event : events) {
-                event.setConfirmedRequests(nvl(confirmedRequests.get(event.getId()), 0));
-            }
-        }
-
-        Map<Long, Integer> eventsViews = eventStatService.getViewsByEventIds(ids, null);
-        if (eventsViews != null && !eventsViews.isEmpty()) {
-            for (Event event : events) {
-                event.setViews(nvl(eventsViews.get(event.getId()), 0));
-            }
-        }
-
-        return events;
-    }
-
     private Event setTransientFields(Event event) {
         event.setConfirmedRequests(requestRep.findCountRequestsByEventIdAndStatus(
                 event.getId(),
                 RequestStatus.CONFIRMED
         ));
-        event.setViews(nvl(eventStatService.getViewsByEventId(event.getId(), event.getCreatedOn()), 0));
+        event.setViews(nvl(eventStatService.getViewsByEventId(event.getId(), event.getCreatedOn()), 1));
         return event;
     }
 
