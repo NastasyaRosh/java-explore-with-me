@@ -3,6 +3,7 @@ package ru.practicum.ewmstats.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewmstats.exception.DateValidationException;
 import ru.practicum.ewmstats.model.Hit;
 import ru.practicum.ewmstats.model.ViewStats;
 import ru.practicum.ewmstats.repository.StatRepository;
@@ -24,6 +25,9 @@ public class StatServiceImpl implements StatService {
 
     @Override
     public List<ViewStats> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
+        if (end.isBefore(start)) {
+            throw new DateValidationException();
+        }
         List<ViewStats> stats;
         if (unique) {
             if (uris == null || uris.isEmpty()) {

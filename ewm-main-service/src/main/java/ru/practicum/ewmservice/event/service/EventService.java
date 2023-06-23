@@ -11,6 +11,8 @@ public interface EventService {
 
     Event findById(Long id);
 
+    Event findByIdOnlyPublished(Long id);
+
     Set<Event> findById(Set<Long> ids);
 
     List<Event> findByParams(

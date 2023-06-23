@@ -20,7 +20,6 @@ import ru.practicum.ewmservice.request.repository.RequestRepository;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
@@ -45,6 +44,17 @@ public class EventServiceImpl implements EventService {
         Event event = eventRep.findById(id).orElseThrow(
                 () -> new NotFoundException(Event.class.getSimpleName(), id)
         );
+        return setTransientFields(event);
+    }
+
+    @Override
+    public Event findByIdOnlyPublished(Long id) {
+        Event event = eventRep.findById(id).orElseThrow(
+                () -> new NotFoundException(Event.class.getSimpleName(), id)
+        );
+        if (event.getPublishedOn() == null) {
+            throw new NotFoundException(Event.class.getSimpleName(), id);
+        }
         return setTransientFields(event);
     }
 
@@ -134,23 +144,9 @@ public class EventServiceImpl implements EventService {
     }
 
     private List<Event> setTransientFields(List<Event> events) {
-        List<Long> ids = events.stream().map(Event::getId).collect(toList());
-
-        Map<Long, Integer> confirmedRequests = requestRep
-                .findCountRequestsByEventIdsAndStatus(ids, RequestStatus.CONFIRMED);
-        if (confirmedRequests != null && !confirmedRequests.isEmpty()) {
-            for (Event event : events) {
-                event.setConfirmedRequests(nvl(confirmedRequests.get(event.getId()), 0));
-            }
+        for (Event event : events) {
+            setTransientFields(event);
         }
-
-        Map<Long, Integer> eventsViews = eventStatService.getViewsByEventIds(ids, null);
-        if (eventsViews != null && !eventsViews.isEmpty()) {
-            for (Event event : events) {
-                event.setViews(nvl(eventsViews.get(event.getId()), 0));
-            }
-        }
-
         return events;
     }
 
@@ -159,7 +155,7 @@ public class EventServiceImpl implements EventService {
                 event.getId(),
                 RequestStatus.CONFIRMED
         ));
-        event.setViews(nvl(eventStatService.getViewsByEventId(event.getId(), event.getCreatedOn()), 0));
+        event.setViews(nvl(eventStatService.getViewsByEventId(event.getId(), event.getCreatedOn()), 1));
         return event;
     }
 
