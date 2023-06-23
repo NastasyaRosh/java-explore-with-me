@@ -5,6 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewmservice.category.service.CategoryService;
+import ru.practicum.ewmservice.compilation.service.CompilationService;
+import ru.practicum.ewmservice.event.service.EventService;
 import ru.practicum.ewmservice.user.dto.NewUserRequest;
 import ru.practicum.ewmservice.user.dto.UserDto;
 import ru.practicum.ewmservice.user.mapper.UserMapper;
@@ -23,6 +26,9 @@ import java.util.List;
 @Slf4j
 public class AdminUserController {
     private final UserService userService;
+    private final CategoryService categoryService;
+    private final EventService eventService;
+    private final CompilationService compilationService;
 
     @GetMapping("/users")
     @ResponseStatus(HttpStatus.OK)

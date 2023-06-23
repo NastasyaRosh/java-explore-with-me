@@ -5,6 +5,7 @@ import lombok.*;
 import ru.practicum.ewmservice.event.property.StateAction;
 import ru.practicum.ewmservice.location.dto.LocationDto;
 
+import javax.validation.constraints.Future;
 import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
@@ -25,6 +26,7 @@ public class UpdateEventAdminRequest {
     private LocationDto location;
     private Long category;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @Future
     private LocalDateTime eventDate;
     private Boolean paid;
     @PositiveOrZero

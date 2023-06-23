@@ -11,9 +11,9 @@ import ru.practicum.ewmservice.event.mapper.EventMapper;
 import ru.practicum.ewmservice.event.property.EventSort;
 import ru.practicum.ewmservice.event.service.EventService;
 import ru.practicum.ewmservice.event.stat.EventStatService;
-import ru.practicum.ewmservice.exception.IllegalPageArgumentException;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ValidationException;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
@@ -48,7 +48,7 @@ public class EventController {
             rangeStart = LocalDateTime.now();
         }
         if ((rangeEnd != null) && (rangeEnd.isBefore(rangeStart))) {
-            throw new IllegalPageArgumentException("Start is before end.", "Date");
+            throw new ValidationException("Start is before end.");
         }
         statService.sendHit(request);
         return EventMapper.mapToShortDto(eventService.findByParams(
@@ -65,6 +65,6 @@ public class EventController {
     ) {
         log.info("GET: Get event by id = {}", eventId);
         statService.sendHit(request);
-        return EventMapper.mapToFullDto(eventService.findByIdPublished(eventId));
+        return EventMapper.mapToFullDto(eventService.findById(eventId));
     }
 }

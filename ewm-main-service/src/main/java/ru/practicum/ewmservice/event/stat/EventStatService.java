@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import ru.practicum.ewmstats.client.StatsClient;
 import ru.practicum.ewmstats.dto.HitDto;
 import ru.practicum.ewmstats.dto.ViewStatsDto;

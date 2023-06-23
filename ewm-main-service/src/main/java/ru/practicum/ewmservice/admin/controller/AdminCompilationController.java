@@ -11,12 +11,10 @@ import ru.practicum.ewmservice.compilation.dto.UpdateCompilationRequest;
 import ru.practicum.ewmservice.compilation.mapper.CompilationMapper;
 import ru.practicum.ewmservice.compilation.model.Compilation;
 import ru.practicum.ewmservice.compilation.service.CompilationService;
-import ru.practicum.ewmservice.event.model.Event;
 import ru.practicum.ewmservice.event.service.EventService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.PositiveOrZero;
-import java.util.Set;
 
 @RestController
 @RequestMapping(path = "/admin")
@@ -33,9 +31,9 @@ public class AdminCompilationController {
     public CompilationDto createCompilation(@Valid @RequestBody NewCompilationDto compDto) {
         log.info("POST: Create compilation = {}", compDto);
         Compilation compilation = CompilationMapper.mapToEntity(compDto);
-        Set<Event> events = (compDto.getEvents() != null) ?
-                eventService.findByIdIn(compDto.getEvents()) : null;
-        compilation.setEvents(events);
+        if (compDto.getEvents() != null && !compDto.getEvents().isEmpty()) {
+            compilation.setEvents(eventService.findById(compDto.getEvents()));
+        }
         return CompilationMapper.mapToDto(compilationService.create(compilation));
     }
 
@@ -47,9 +45,7 @@ public class AdminCompilationController {
     ) {
         log.info("PATCH: Update compilation with id = {} with data = {}", compId, compDto);
         Compilation compilation = CompilationMapper.mapToEntity(compDto);
-        Set<Event> events = (compDto.getEvents() != null) ?
-                eventService.findByIdIn(compDto.getEvents()) : null;
-        compilation.setEvents(events);
+        compilation.setEvents(eventService.findById(compDto.getEvents()));
         return CompilationMapper.mapToDto(compilationService.update(compId, compilation));
     }
 

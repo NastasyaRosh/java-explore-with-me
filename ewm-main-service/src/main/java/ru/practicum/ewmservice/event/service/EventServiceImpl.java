@@ -11,7 +11,6 @@ import ru.practicum.ewmservice.event.property.EventSort;
 import ru.practicum.ewmservice.event.property.EventState;
 import ru.practicum.ewmservice.event.repository.EventRepository;
 import ru.practicum.ewmservice.event.stat.EventStatService;
-import ru.practicum.ewmservice.exception.NotAvailableException;
 import ru.practicum.ewmservice.exception.NotFoundException;
 import ru.practicum.ewmservice.exception.OperationAccessException;
 import ru.practicum.ewmservice.location.repository.LocationRepository;
@@ -21,6 +20,7 @@ import ru.practicum.ewmservice.request.repository.RequestRepository;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
@@ -49,21 +49,9 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Event findByIdPublished(Long id) {
-        Event event = eventRep.findById(id).orElseThrow(
-                () -> new NotFoundException(Event.class.getSimpleName(), id)
-        );
-        if (!event.getState().equals(EventState.PUBLISHED)) {
-            throw new NotFoundException(Event.class.getSimpleName(), id);
-        }
-        return setTransientFields(event);
-    }
-
-    @Override
-    public Set<Event> findByIdIn(Set<Long> ids) {
+    public Set<Event> findById(Set<Long> ids) {
         List<Event> events = eventRep.findByIdIn(ids);
-        Set<Event> outSet = new HashSet<>(events);
-        return outSet;
+        return new HashSet<>(setTransientFields(events));
     }
 
     @Override
@@ -77,7 +65,7 @@ public class EventServiceImpl implements EventService {
                 users, text, categories, paid, rangeStart, rangeEnd, onlyAvailable, isPublic
         );
 
-        return eventRep.findAll(specification).stream()
+        return setTransientFields(eventRep.findAll(specification)).stream()
                 .sorted(getComparator(eventSort))
                 .skip(from)
                 .limit(size)
@@ -105,7 +93,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<Event> findEventsByUserId(Long userId, Long from, Integer size) {
         List<Event> events = eventRep.findByInitiatorId(userId, getIdSortedPageable(from, size)).getContent();
-        return events;
+        return setTransientFields(events);
     }
 
     @Override
@@ -145,18 +133,39 @@ public class EventServiceImpl implements EventService {
         return eventRep.save(oldEvent);
     }
 
+    private List<Event> setTransientFields(List<Event> events) {
+        List<Long> ids = events.stream().map(Event::getId).collect(toList());
+
+        Map<Long, Integer> confirmedRequests = requestRep
+                .findCountRequestsByEventIdsAndStatus(ids, RequestStatus.CONFIRMED);
+        if (confirmedRequests != null && !confirmedRequests.isEmpty()) {
+            for (Event event : events) {
+                event.setConfirmedRequests(nvl(confirmedRequests.get(event.getId()), 0));
+            }
+        }
+
+        Map<Long, Integer> eventsViews = eventStatService.getViewsByEventIds(ids, null);
+        if (eventsViews != null && !eventsViews.isEmpty()) {
+            for (Event event : events) {
+                event.setViews(nvl(eventsViews.get(event.getId()), 0));
+            }
+        }
+
+        return events;
+    }
+
     private Event setTransientFields(Event event) {
         event.setConfirmedRequests(requestRep.findCountRequestsByEventIdAndStatus(
                 event.getId(),
                 RequestStatus.CONFIRMED
         ));
-        event.setViews(nvl(eventStatService.getViewsByEventId(event.getId(), event.getCreatedOn()), 1));
+        event.setViews(nvl(eventStatService.getViewsByEventId(event.getId(), event.getCreatedOn()), 0));
         return event;
     }
 
     private void validateEvent(Event event, Long userId) {
         if (event.getEventDate() != null && event.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new NotAvailableException("The start date of the event cannot be earlier than 2 hours later");
+            throw new OperationAccessException("The start date of the event cannot be earlier than 2 hours later");
         }
         if (userId != null && event.getInitiator() != null && !userId.equals(event.getInitiator().getId())) {
             throw new OperationAccessException("Only the owner can update the event");
