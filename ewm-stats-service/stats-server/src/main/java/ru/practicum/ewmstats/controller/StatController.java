@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewmstats.dto.HitDto;
 import ru.practicum.ewmstats.dto.ViewStatsDto;
-import ru.practicum.ewmstats.exception.DateValidationException;
 import ru.practicum.ewmstats.mapper.HitMapper;
 import ru.practicum.ewmstats.mapper.ViewStatsMapper;
 import ru.practicum.ewmstats.model.Hit;
@@ -33,9 +32,6 @@ public class StatController {
             @RequestParam(required = false) List<String> uris,
             @RequestParam(defaultValue = "false") Boolean unique
     ) {
-        if (end.isBefore(start)) {
-            throw new DateValidationException();
-        }
         log.info("GET: Requested stat for period {} - {}, uris: {}, mode: {}", start, end, uris, unique);
         return viewStatsMapper.mapToDto(statService.getStats(start, end, uris, unique));
     }
