@@ -59,6 +59,18 @@ public class ErrorHandler {
         return buildApiError(e, "Incorrectly made request.", HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ApiError handleReadResponseBody(final ReadResponseBodyException e) {
+        return buildApiError(e, e.getReason(), e.getStatus());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ApiError handleRuntimeException(final RuntimeException e) {
+        return buildApiError(e, e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     private ApiError buildApiError(Exception e, String reason, HttpStatus status) {
         log.error(e.getMessage());
         return ApiError.builder()

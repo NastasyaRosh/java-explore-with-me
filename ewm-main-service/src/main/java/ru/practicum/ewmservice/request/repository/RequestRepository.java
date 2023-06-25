@@ -3,10 +3,10 @@ package ru.practicum.ewmservice.request.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import ru.practicum.ewmservice.request.model.Request;
+import ru.practicum.ewmservice.request.model.RequestCounter;
 import ru.practicum.ewmservice.request.property.RequestStatus;
 
 import java.util.List;
-import java.util.Map;
 
 public interface RequestRepository extends JpaRepository<Request, Long> {
 
@@ -19,13 +19,13 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     Integer findCountRequestsByEventIdAndStatus(Long eventId, RequestStatus status);
 
     @Query(
-            "select r.event.id, count(r) " +
+            value = "SELECT new ru.practicum.ewmservice.request.model.RequestCounter(r.event.id, COUNT(r)) " +
                     "from Request r " +
-                    "where r.event.id = ?1 " +
+                    "where r.event.id in ?1 " +
                     "and r.status = ?2 " +
-                    "group by r.event.id"
+                    "group by r.event.id "
     )
-    Map<Long, Integer> findCountRequestsByEventIdsAndStatus(List<Long> eventIds, RequestStatus status);
+    List<RequestCounter> findCountRequestsByEventIdsAndStatus(List<Long> eventIds, RequestStatus status);
 
     List<Request> findByEventIdAndEventInitiatorId(Long eventId, Long userId);
 

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import ru.practicum.ewmservice.exception.ReadResponseBodyException;
 import ru.practicum.ewmstats.client.StatsClient;
 import ru.practicum.ewmstats.dto.HitDto;
 import ru.practicum.ewmstats.dto.ViewStatsDto;
@@ -82,7 +83,7 @@ public class EventStatService {
             try {
                 viewsDto = objectMapper.readValue(jsonBody, tr);
             } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
+                throw new ReadResponseBodyException(jsonBody);
             }
         }
 

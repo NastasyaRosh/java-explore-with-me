@@ -14,13 +14,12 @@ import ru.practicum.ewmservice.event.stat.EventStatService;
 import ru.practicum.ewmservice.exception.NotFoundException;
 import ru.practicum.ewmservice.exception.OperationAccessException;
 import ru.practicum.ewmservice.location.repository.LocationRepository;
+import ru.practicum.ewmservice.request.model.RequestCounter;
 import ru.practicum.ewmservice.request.property.RequestStatus;
 import ru.practicum.ewmservice.request.repository.RequestRepository;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 import static ru.practicum.ewmservice.event.util.EventUtil.getComparator;
@@ -74,7 +73,6 @@ public class EventServiceImpl implements EventService {
         Specification<Event> specification = getEventSpecification(
                 users, text, categories, paid, rangeStart, rangeEnd, onlyAvailable, isPublic
         );
-
         return setTransientFields(eventRep.findAll(specification)).stream()
                 .sorted(getComparator(eventSort))
                 .skip(from)
@@ -144,9 +142,30 @@ public class EventServiceImpl implements EventService {
     }
 
     private List<Event> setTransientFields(List<Event> events) {
-        for (Event event : events) {
-            setTransientFields(event);
+        List<Long> ids = events.stream().map(Event::getId).collect(toList());
+
+        List<RequestCounter> confirmedRequests = requestRep
+                .findCountRequestsByEventIdsAndStatus(ids, RequestStatus.CONFIRMED);
+        Map<Long, Long> confirmedRequestsMap = new HashMap<>();
+
+        for (RequestCounter requestCounter : confirmedRequests) {
+            confirmedRequestsMap.put(requestCounter.getEventId(), requestCounter.getCount());
         }
+        for (Event event : events) {
+            if (confirmedRequestsMap.get(event.getId()) == null) {
+                event.setConfirmedRequests(0);
+            } else {
+                event.setConfirmedRequests(confirmedRequestsMap.get(event.getId()).intValue());
+            }
+        }
+
+        Map<Long, Integer> eventsViews = eventStatService.getViewsByEventIds(ids, null);
+        if (eventsViews != null && !eventsViews.isEmpty()) {
+            for (Event event : events) {
+                event.setViews(nvl(eventsViews.get(event.getId()), 0));
+            }
+        }
+
         return events;
     }
 

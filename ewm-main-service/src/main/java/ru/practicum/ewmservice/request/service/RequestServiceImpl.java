@@ -66,7 +66,7 @@ public class RequestServiceImpl implements RequestService {
         List<Request> requests = requestRep.findByIdIn(requestIds);
 
         if ((!event.getRequestModeration() || event.getParticipantLimit() == 0)
-                && status.equals(RequestStatus.CONFIRMED)
+                && RequestStatus.CONFIRMED.equals(status)
         ) {
             return new EventRequestStatusUpdateResult(RequestMapper.mapToDto(requests), Collections.emptyList());
         }
@@ -77,7 +77,7 @@ public class RequestServiceImpl implements RequestService {
         List<Request> rejectedRequests = new ArrayList<>();
 
         for (Request request : requests) {
-            if (!request.getStatus().equals(RequestStatus.PENDING)) {
+            if (!RequestStatus.PENDING.equals(request.getStatus())) {
                 throw new NotAvailableException("Request must have status PENDING");
             }
 
