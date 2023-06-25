@@ -2,8 +2,9 @@ package ru.practicum.ewmservice.exception;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
+
 @Getter
-public class ReadResponseBodyException extends RuntimeException{
+public class ReadResponseBodyException extends RuntimeException {
     protected final String reason;
     protected final HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
