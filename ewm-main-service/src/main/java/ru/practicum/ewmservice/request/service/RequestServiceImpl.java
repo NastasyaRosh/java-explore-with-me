@@ -153,7 +153,7 @@ public class RequestServiceImpl implements RequestService {
                 );
             }
         }
-        if (!event.getState().equals(EventState.PUBLISHED)) {
+        if (!EventState.PUBLISHED.equals(event.getState())) {
             throw new OperationAccessException("It is not possible to apply for an unpublished event");
         }
         if (
